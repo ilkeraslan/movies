@@ -5,8 +5,11 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -24,7 +27,7 @@ class MainActivity : AppCompatActivity() {
             adapter = MoviesAdapter(movies)
         }
 
-        val compositeDisposable = CompositeDisposable()
+/*        val compositeDisposable = CompositeDisposable()
         compositeDisposable.add(
             ServiceBuilder.buildService().getMovies(resources.getString(R.string.api_key))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -44,12 +47,27 @@ class MainActivity : AppCompatActivity() {
                     {response -> onResponse(response)},
                     {t -> onFailure(t) }
                 )
-        )
+        )*/
 
+        val bar: Observable<PopularMovies> =
+            Observable.merge(
+                ServiceBuilder.buildService().getMovies(resources.getString(R.string.api_key)),
+                ServiceBuilder.buildService().getUpcomingMovies(resources.getString(R.string.api_key))
+            )
+
+        val disp = bar
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(Schedulers.io())
+            .subscribe(
+                { response -> onResponse(response) },
+                { error -> onFailure(error) }
+            )
+
+        val compositeDisp = CompositeDisposable().add(disp)
     }
 
     private fun onFailure(t: Throwable) {
-        Toast.makeText(this,t.message, Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, t.message, Toast.LENGTH_SHORT).show()
     }
 
     private fun onResponse(response: PopularMovies) {
