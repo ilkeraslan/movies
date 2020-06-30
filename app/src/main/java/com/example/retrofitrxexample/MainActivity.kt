@@ -1,17 +1,15 @@
 package com.example.retrofitrxexample
 
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -21,11 +19,20 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        recyclerView.apply {
+        val host: NavHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment?
+                ?: return
+        val navView: BottomNavigationView = findViewById(R.id.nav_view)
+        val navController = host.navController
+
+        navView.setupWithNavController(navController)
+        navView.setOnNavigationItemReselectedListener { /* do nothing */ }
+
+/*        recyclerView.apply {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = MoviesAdapter(movies)
-        }
+        }*/
 
 /*        val compositeDisposable = CompositeDisposable()
         compositeDisposable.add(
@@ -52,7 +59,8 @@ class MainActivity : AppCompatActivity() {
         val bar: Observable<PopularMovies> =
             Observable.merge(
                 ServiceBuilder.buildService().getMovies(resources.getString(R.string.api_key)),
-                ServiceBuilder.buildService().getUpcomingMovies(resources.getString(R.string.api_key))
+                ServiceBuilder.buildService()
+                    .getUpcomingMovies(resources.getString(R.string.api_key))
             )
 
         val disp = bar
@@ -66,6 +74,7 @@ class MainActivity : AppCompatActivity() {
         val compositeDisp = CompositeDisposable().add(disp)
     }
 
+
     private fun onFailure(t: Throwable) {
         Toast.makeText(this, t.message, Toast.LENGTH_SHORT).show()
     }
@@ -76,8 +85,8 @@ class MainActivity : AppCompatActivity() {
             println("MOVIE: ".plus(it.title))
         }
 
-        progress_bar.visibility = View.GONE
+/*        progress_bar.visibility = View.GONE
 
-        recyclerView.adapter?.notifyDataSetChanged()
+        recyclerView.adapter?.notifyDataSetChanged()*/
     }
 }
