@@ -56,7 +56,7 @@ class PopularMoviesScreen : Fragment() {
             adapter = MoviesAdapter(popularMovies)
         }
 
-        val compositeDisposable = CompositeDisposable()
+/*        val compositeDisposable = CompositeDisposable()
         compositeDisposable.add(
             ServiceBuilder.buildService().getMovies(resources.getString(R.string.api_key))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -65,11 +65,24 @@ class PopularMoviesScreen : Fragment() {
                     {response -> onResponse(response)},
                     {t -> onFailure(t) }
                 )
-        )
+        )*/
+
+        val foo = CompositeDisposable()
+        foo.add(
+            KtorServiceBuilder.buildService().getUsers()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                    { response -> onResponse(response) },
+                    { t -> onFailure(t) }
+                ))
+
+        val usersCompositeDisposable = CompositeDisposable().add(foo)
     }
 
     private fun onFailure(t: Throwable) {
         Toast.makeText(requireActivity(), t.message, Toast.LENGTH_SHORT).show()
+        println(t.localizedMessage)
     }
 
     private fun onResponse(response: PopularMovies) {
@@ -79,6 +92,10 @@ class PopularMoviesScreen : Fragment() {
         }
 
         recycle.adapter?.notifyDataSetChanged()
+    }
+
+    private fun onResponse(response: Users) {
+        println(response)
     }
 
     companion object {

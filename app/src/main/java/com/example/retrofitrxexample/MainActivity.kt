@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 )
         )*/
 
-        val bar: Observable<PopularMovies> =
+/*        val bar: Observable<PopularMovies> =
             Observable.merge(
                 ServiceBuilder.buildService().getMovies(resources.getString(R.string.api_key)),
                 ServiceBuilder.buildService()
@@ -71,7 +71,19 @@ class MainActivity : AppCompatActivity() {
                 { error -> onFailure(error) }
             )
 
-        val compositeDisp = CompositeDisposable().add(disp)
+        val compositeDisp = CompositeDisposable().add(disp)*/
+
+        val foo = CompositeDisposable()
+        foo.add(
+            KtorServiceBuilder.buildService().getUsers()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(
+                    { response -> onResponse(response) },
+                    { t -> onFailure(t) }
+                ))
+
+        val usersCompositeDisposable = CompositeDisposable().add(foo)
     }
 
 
@@ -84,9 +96,9 @@ class MainActivity : AppCompatActivity() {
             movies.add(it)
             println("MOVIE: ".plus(it.title))
         }
+    }
 
-/*        progress_bar.visibility = View.GONE
-
-        recyclerView.adapter?.notifyDataSetChanged()*/
+    private fun onResponse(response: Users) {
+        println(response)
     }
 }
